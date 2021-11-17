@@ -65,7 +65,7 @@ Window {
 //        x: (Screen.width-width)*0.5
         y: Screen.height * 0.5
         x: 800;
-        visible: true
+        //visible: true
         autoSave: true
         mainWinWidget: win.width
         mainWinHeight: win.height
@@ -150,12 +150,12 @@ Window {
                 loadSettingPage()
             }
         }
-//TODO 复制功能
-        MenuItem {
-            text: qsTr("复制")
-            shortcut: "Ctrl+C"
-            onTriggered: {
 
+        MenuItem {
+            text: qsTr("保存")
+            shortcut: "Ctrl+S"
+            onTriggered: {
+                fileDeal.saveFileDeal(loadText.text,settingPage.fileDefault);
             }
         }
     }

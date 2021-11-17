@@ -783,5 +783,4 @@ Window {
             windowColorChanged();
         }
     }
-
 }
