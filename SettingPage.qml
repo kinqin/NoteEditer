@@ -15,6 +15,8 @@ Window {
     property alias autoSave: saveOrNotBtn.isChecked
     property real mainWinWidget;
     property real mainWinHeight;
+    property real mainWinX;
+    property real mainWinY;
     property real mainWinOpacity;
     property real inputOpacity;
     property var mainWinColor;
@@ -27,7 +29,11 @@ Window {
     property var typeList: ["Txt","MarkDown","Rich","Auto"]
     property var keyPress: typeList[1]
 
+    property var posList: ["default","center","custom"]
+    property var posCur: posList[0]
+
     signal sizeChanged();
+    signal posChanged();
     signal opacityChanged();
     signal recInOpacityChanged();
     signal loadTypeChanged();
@@ -88,7 +94,7 @@ Window {
         width: autoSave.width
         height: 25
         border.color: "#CCEEDD"
-        radius: height * 0.5
+        radius: defaultRadius
 
 //      路径
         Rectangle{
@@ -117,7 +123,7 @@ Window {
             color: "#3399ff"
             Text {
                 id: pathSelectBtn
-                text: qsTr("选择路径")
+                text: qsTr("选择文件")
 //                font.pixelSize: 13
                 anchors.centerIn: parent
                 color: "#ffffff"
@@ -269,13 +275,209 @@ Window {
 
     }
 
+    Rectangle{
+        id: posSet
+        anchors.top: windowSize.bottom
+        anchors.topMargin: 5
+        anchors.horizontalCenter: parent.horizontalCenter
+        width: autoSave.width
+        height: autoSave.height
+        border.color: "#CCEEDD"
+        radius: height * 0.5
+
+        Rectangle{
+            id: defaultPos
+            anchors.left: parent.left
+            anchors.top: parent.top
+            width: defaultPosText.contentWidth + parent.radius * 2
+            height: parent.height
+            radius: parent.radius
+            border.color: parent.border.color
+            color: defaultPosText.text === posCur ? "#3399ff" : "#ffffff"
+
+            Rectangle{
+                anchors.right: parent.right
+                anchors.top: parent.top
+                anchors.topMargin: 1
+                width: parent.width * 0.5
+                height: parent.height - 2
+                color: parent.color
+            }
+
+            Text {
+                id: defaultPosText
+                text: qsTr("default")
+                anchors.centerIn: parent
+                color: defaultPosText.text === posCur ? "#ffffff" : "#000000"
+            }
+
+            MouseArea{
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                onClicked: {
+                    posCur = posList[0]
+                    mainWinX = (Screen.width-mainWinWidget)*0.5
+                    mainWinY = (Screen.desktopAvailableHeight)-mainWinHeight-10
+                    posChanged();
+                }
+            }
+        }
+
+        Rectangle{
+            id: centerPos
+            anchors.left: defaultPos.right
+            anchors.top: parent.top
+            width: defaultPos.width
+            height: parent.height
+            border.color: parent.border.color
+            color: centerPosText.text === posCur ? "#3399ff" : "#ffffff"
+
+            Text{
+                id: centerPosText
+                text: "center"
+                anchors.centerIn: parent
+                color: centerPosText.text === posCur ? "#ffffff" : "#000000"
+            }
+
+            MouseArea{
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                onClicked: {
+                    posCur = posList[1]
+                    mainWinX = (Screen.width-mainWinWidget)*0.5
+                    mainWinY = (Screen.height-mainWinHeight)*0.5
+                    posChanged();
+                }
+            }
+        }
+
+        Rectangle{
+            id: customPos
+            anchors.left: centerPos.right
+            anchors.top: parent.top
+            border.color: parent.border.color
+            width: defaultPos.width
+            height: parent.height
+            color: customPosText.text === posCur ? "#3399ff" : "#ffffff"
+
+            Text{
+                id: customPosText
+                text: "custom"
+                anchors.centerIn: parent
+                color: customPosText.text === posCur ? "#ffffff" : "#000000"
+            }
+
+            MouseArea{
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                onClicked: {
+                    posCur = posList[2]
+                }
+            }
+        }
+
+        Rectangle{
+            id: xDis
+            anchors.left: customPos.right
+            anchors.top: parent.top
+            border.color: parent.border.color
+            width: (parent.width - defaultPos.width - centerPos.width - customPos.width)*0.5
+            height: parent.height
+            clip: true
+
+            MouseArea{
+                anchors.fill: parent
+                cursorShape: Qt.IBeamCursor
+                onWheel: {
+                    if(!wheel.modifiers){
+                        if(wheel.angleDelta.y > 0){
+                            xDisInput.text = Number(xDisInput.text) + 10
+                        }else{
+                            if(xDisInput.text > 0){
+                                xDisInput.text = Number(xDisInput.text) - 10
+                            }else{
+                                xDisInput.text = 0;
+                            }
+
+                        }
+                    }
+                }
+            }
+
+            TextInput{
+                id: xDisInput
+                anchors.centerIn: parent
+                text: mainWinX
+                readOnly: customPosText.text !== posCur
+                color: "#ff0000"
+
+                onTextChanged: {
+                    mainWinX = xDisInput.text
+                    posChanged();
+                }
+            }
+
+        }
+
+        Rectangle{
+            id: yDis
+            anchors.right: parent.right
+            anchors.top: parent.top
+            border.color: parent.border.color
+            width: xDis.width
+            height: parent.height
+            clip: true
+            radius: parent.radius
+
+            MouseArea{
+                anchors.fill: parent
+                cursorShape: Qt.IBeamCursor
+                onWheel: {
+                    if(!wheel.modifiers){
+                        if(wheel.angleDelta.y > 0){
+                            yDisInput.text = Number(yDisInput.text) + 10
+                        }else{
+                            if(yDisInput.text > 0){
+                                yDisInput.text = Number(yDisInput.text) - 10
+                            }else{
+                                yDisInput.text = 0;
+                            }
+
+                        }
+                    }
+                }
+
+            }
+
+            Rectangle{
+                anchors.left: parent.left
+                anchors.top: parent.top
+                anchors.topMargin: 1
+                width: parent.width * 0.5
+                height: parent.height - 2
+            }
+
+            TextInput{
+                id: yDisInput
+                anchors.centerIn: parent
+                text: mainWinY
+                readOnly: customPosText.text !== posCur
+                color: "#ff0000"
+
+                onTextChanged: {
+                    mainWinY = yDisInput.text
+                    posChanged();
+                }
+            }
+        }
+    }
 
     //TODO: 设置透明度   DONE
     Rectangle{
         id: opacitySet
         height: autoSave.height
         width: autoSave.width
-        anchors.top: windowSize.bottom
+        anchors.top: posSet.bottom
         anchors.topMargin: 5
         anchors.horizontalCenter: parent.horizontalCenter
         border.color: borderColor

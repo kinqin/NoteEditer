@@ -18,6 +18,31 @@ Window {
 
     property string noteText;
 
+    Behavior on width{
+        NumberAnimation{
+            duration: 500
+        }
+    }
+
+    Behavior on height{
+        PropertyAnimation{
+            duration: 500
+        }
+    }
+
+    Behavior on x{
+        PropertyAnimation{
+            duration: 500
+        }
+    }
+
+    Behavior on y{
+        PropertyAnimation{
+            duration: 500
+        }
+    }
+
+
     //TODO: settings
     Settings{
         id: settings
@@ -29,7 +54,9 @@ Window {
         property alias inputWindowOpacity: settingPage.inputOpacity
         property alias defaultFilePath: settingPage.fileDefault
         property alias typeView: settingPage.keyPress
-        property alias windowColor: settingPage.mainWinColor
+        property alias windowColor: rec.color
+        property alias windowX: settingPage.mainWinX
+        property alias windowY: settingPage.mainWinY
     }
 
     /*设置窗口*/
@@ -42,8 +69,10 @@ Window {
         autoSave: true
         mainWinWidget: win.width
         mainWinHeight: win.height
-        mainWinOpacity: rec.opacity
+        mainWinX: win.x
+        mainWinY: win.y
         mainWinColor: rec.color
+        mainWinOpacity: rec.opacity
         inputOpacity: inputRec.opacity
         fileDefault: fileDeal.getFilePath(StandardPaths.writableLocation(StandardPaths.DocumentsLocation) + "/Note.md")
 
@@ -58,6 +87,11 @@ Window {
 //            console.log("change")
             win.width = settingPage.mainWinWidget
             win.height = settingPage.mainWinHeight
+        }
+
+        onPosChanged: {
+            win.x = settingPage.mainWinX
+            win.y = settingPage.mainWinY
         }
 
         onOpacityChanged: {
@@ -134,13 +168,23 @@ Window {
 //    Qt 按键过滤filterevent.cpp
     Filterevent{
         objectName: "filterEvent"
+
         onSettingShow: {
-            console.log("qml show")
+            loadSettingPage();
+        }
+
+        onFileSave: {
+            fileDeal.saveFileDeal(loadText.text,settingPage.fileDefault);
+        }
+
+        onQuitApp: {
+            Qt.quit();
         }
     }
 
 //    主窗口
     Rectangle{
+        id: mainWindow
         anchors.fill: parent
         radius: 8
         color: "#00000000"
@@ -220,6 +264,17 @@ Window {
             height: parent.height - inputRec.height-5
             color: "#454545"
 
+            Behavior on color{
+                PropertyAnimation{
+                    duration: 1000
+                }
+            }
+
+            Behavior on opacity{
+                PropertyAnimation{
+                    duration: 1000
+                }
+            }
 
             Flickable {
                  id: flick

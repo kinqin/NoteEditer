@@ -13,6 +13,8 @@ protected:
 
 signals:
     void settingShow();
+    void fileSave();
+    void quitApp();
 };
 
 #endif // FILTEREVENT_H
