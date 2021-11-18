@@ -1,0 +1,10 @@
+release/filedeal.o
+release/filterevent.o
+release/main.o
+release/SettingPage_qml.o
+release/StandardBtnYesNo_qml.o
+release/main_qml.o
+release/qmlcache_loader.o
+release/qrc_icon.o
+release/moc_filedeal.o
+release/moc_filterevent.o

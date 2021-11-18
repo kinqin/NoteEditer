@@ -20,13 +20,13 @@ Window {
 
     Behavior on width{
         NumberAnimation{
-            duration: 500
+            duration: 300
         }
     }
 
     Behavior on height{
         PropertyAnimation{
-            duration: 500
+            duration: 300
         }
     }
 
@@ -57,6 +57,7 @@ Window {
         property alias windowColor: rec.color
         property alias windowX: settingPage.mainWinX
         property alias windowY: settingPage.mainWinY
+        property alias curPos: settingPage.posCur
     }
 
     /*设置窗口*/
@@ -67,8 +68,8 @@ Window {
         x: 800;
         //visible: true
         autoSave: true
-        mainWinWidget: win.width
-        mainWinHeight: win.height
+        mainWinWidget: 300
+        mainWinHeight: 200
         mainWinX: win.x
         mainWinY: win.y
         mainWinColor: rec.color
@@ -320,8 +321,8 @@ Window {
     /*系统托盘*/
     SystemTrayIcon {
         visible: true
-        tooltip: "toolTip"
-        icon.source: "qrc:/icon/icon.png"
+        tooltip: "NoteEditer"
+        icon.source: "qrc:/icon/logo.png"
         onActivated: {
             //showMinimized()之后状态为3？
             if(win.visibility === Qt.WindowMaximized){
@@ -339,15 +340,15 @@ Window {
         menu: Menu {
             id:mmenu
             MenuItem{
-                text: qsTr("设置")
+                text: qsTr("设置");
                 onTriggered: {
-                    loadSettingPage()
+                    loadSettingPage();
                 }
             }
 
             MenuItem{
-                text: qsTr("退出")
-                onTriggered: Qt.quit()
+                text: qsTr("退出");
+                onTriggered: Qt.quit();
             }
         }
     }

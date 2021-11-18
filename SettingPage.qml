@@ -7,7 +7,7 @@ import Qt.labs.platform 1.0
 Window {
     id:root
     width: 300
-    height: 300
+    height: 350
     visible: false
     minimumWidth: 300
     minimumHeight: 200
@@ -70,17 +70,17 @@ Window {
             Component.onCompleted: {
                 if(isChecked){
                     // TODO: setting界面加载配置文件
-                    console.log("################")
+                    console.log("已加载配置文件")
                 }
             }
 
-            onYesPress: {
-                console.log("yes")
-            }
+//            onYesPress: {
 
-            onNoPress: {
-                console.log("no")
-            }
+//            }
+
+//            onNoPress: {
+
+//            }
         }
 
     }
@@ -147,12 +147,11 @@ Window {
         onAccepted: {
             //console.log("select",currentFile)
             filePathChanged();
-//            fileDefault = currentFile
         }
     }
 
 
-    //TODO: 自定义主窗口大小 ****位置****
+    //TODO: 自定义主窗口大小 ****位置**** DONE
     Rectangle{
         id:windowSize
         width: autoSave.width
@@ -381,9 +380,10 @@ Window {
             anchors.left: customPos.right
             anchors.top: parent.top
             border.color: parent.border.color
-            width: (parent.width - defaultPos.width - centerPos.width - customPos.width)*0.5
+            width: (parent.width - defaultPos.width - centerPos.width - customPos.width)*0.5+1
             height: parent.height
             clip: true
+            color: "#3399ff"
 
             MouseArea{
                 anchors.fill: parent
@@ -412,7 +412,7 @@ Window {
                 color: "#ff0000"
 
                 onTextChanged: {
-                    mainWinX = xDisInput.text
+                    mainWinX = Number(xDisInput.text)
                     posChanged();
                 }
             }
@@ -424,10 +424,11 @@ Window {
             anchors.right: parent.right
             anchors.top: parent.top
             border.color: parent.border.color
-            width: xDis.width
+            width: xDis.width + 1
             height: parent.height
             clip: true
             radius: parent.radius
+            color: "#3399ff"
 
             MouseArea{
                 anchors.fill: parent
@@ -455,6 +456,7 @@ Window {
                 anchors.topMargin: 1
                 width: parent.width * 0.5
                 height: parent.height - 2
+                color: parent.color
             }
 
             TextInput{
@@ -782,5 +784,15 @@ Window {
             mainWinColor = currentColor
             windowColorChanged();
         }
+    }
+
+    Image {
+        id: noteEditer
+        source: "qrc:/icon/textBg.png"
+        width: autoSave.width
+        height: 80
+        anchors.top: colorSet.bottom
+        anchors.topMargin: 15
+        anchors.horizontalCenter: parent.horizontalCenter
     }
 }

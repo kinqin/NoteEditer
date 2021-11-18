@@ -1,7 +1,6 @@
 #include "filterevent.h"
 #include <QEvent>
 #include <QKeyEvent>
-#include <QtDebug>
 
 filterevent::filterevent(QObject *parent) : QObject(parent)
 {
@@ -15,7 +14,6 @@ bool filterevent::eventFilter(QObject *watched, QEvent *event)
         if(keyEvent->modifiers() & Qt::ControlModifier){
             switch (keyEvent->key()) {
             case Qt::Key_Comma:
-                qDebug()<<"setting key press";
                 emit settingShow();
                 break;
             case Qt::Key_S:
