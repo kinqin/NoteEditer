@@ -1,5 +1,10 @@
 #include "filedeal.h"
 #include <QFile>
+#include <QDebug>
+
+//#ifdef Q_OS_WIN
+//#include "winsock2.h"
+//#endif
 
 FileDeal::FileDeal(QObject *parent) : QObject(parent)
 {
@@ -32,5 +37,13 @@ QString FileDeal::loadFileDeal(QString filePath)
 
 QString FileDeal::getFilePath(QString filePath)
 {
+#ifdef Q_OS_WIN
+    qDebug()<<"当前系统：windows";
     return filePath.mid(8);
+#endif
+#ifdef Q_OS_LINUX
+    qDebug()<<"当前系统：linux";
+    return filePath.mid(7);
+#endif
+
 }
