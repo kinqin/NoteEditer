@@ -8,15 +8,13 @@ import event.key.filter 1.0
 Window {
     id:win
     visible: true
-    width: settingPage.mainWinWidget//Screen.width * 0.5
-    height: settingPage.mainWinHeight
+    width: 300//settingPage.mainWinWidth//Screen.width * 0.5
+    height: 200//settingPage.mainWinHeight
     x: (Screen.width-width)*0.5
     y: (Screen.desktopAvailableHeight)-height-10
     title: qsTr("NoteEditer")
     flags: Qt.FramelessWindowHint|Qt.Window
     color: "#00000000"
-
-    property string noteText;
 
     Behavior on width{
         NumberAnimation{
@@ -46,64 +44,75 @@ Window {
     //TODO: settings
     Settings{
         id: settings
-        property alias textColor: loadText.color
         property alias setAutoSave: settingPage.autoSave
-        property alias windowWidth: settingPage.mainWinWidget
+
+        property alias windowWidth: settingPage.mainWinWidth
         property alias windowHeight: settingPage.mainWinHeight
-        property alias windowOpacity: settingPage.mainWinOpacity
-        property alias inputWindowOpacity: settingPage.inputOpacity
-        property alias defaultFilePath: settingPage.fileDefault
-        property alias typeView: settingPage.keyPress
-        property alias windowColor: rec.color
         property alias windowX: settingPage.mainWinX
         property alias windowY: settingPage.mainWinY
         property alias curPos: settingPage.posCur
+
+        property alias windowOpacity: settingPage.mainWinOpacity
+        property alias inputWindowOpacity: settingPage.inputOpacity
+
+        property alias defaultFilePath: settingPage.fileUrl
+
+        property alias typeView: settingPage.keyPress
+        property alias loadtextFormat: loadText.textFormat
+
+        property alias windowColor: settingPage.mainWinColor
+        property alias editRecColor: settingPage.editWinColor
+
+        property alias fontColor: settingPage.fontColor
+        property alias editFontColor: settingPage.editFontColor
+        property alias fontSize: settingPage.fontSize
+        property alias editFontSize: settingPage.editFontSize
+
     }
 
     /*设置窗口*/
     SettingPage{
         id:settingPage
-//        x: (Screen.width-width)*0.5
+        x: mainWinX+mainWinWidth*0.5
         y: Screen.height * 0.5
-        x: 800;
-        //visible: true
+//        x: 800;
+        visible: false
         autoSave: true
-        mainWinWidget: 300
-        mainWinHeight: 200
+
+        mainWinWidth: win.width
+        mainWinHeight: win.height
         mainWinX: win.x
         mainWinY: win.y
+
         mainWinColor: rec.color
+        editWinColor:inputRec.color
+
         mainWinOpacity: rec.opacity
         inputOpacity: inputRec.opacity
-        fileDefault: fileDeal.getFilePath(StandardPaths.writableLocation(StandardPaths.DocumentsLocation) + "/Note.md")
+
+        fontColor: loadText.color
+        editFontColor: textEdit.color
+        fontSize: loadText.font.pixelSize
+        editFontSize: textEdit.font.pixelSize
+
+        fileUrl: fileDeal.getFilePath(StandardPaths.writableLocation(StandardPaths.DocumentsLocation) + "/Note.md")
 
         property var tmpText: ""
 
-        onFilePathChanged: {
-            fileDefault = fileDeal.getFilePath(filePathDialog)
-            loadText.text =  fileDeal.loadFileDeal(fileDefault);
+        onFileUrlIsChanged: {
+            fileUrl = fileDeal.getFilePath(fileUrl);
+            loadText.text =  fileDeal.loadFileDeal(fileUrl);
         }
 
-        onSizeChanged: {
-//            console.log("change")
-            win.width = settingPage.mainWinWidget
-            win.height = settingPage.mainWinHeight
-        }
+        onMainWinWidthChanged: win.width = settingPage.mainWinWidth
+        onMainWinHeightChanged: win.height = settingPage.mainWinHeight
+        onMainWinXChanged: win.x = settingPage.mainWinX
+        onMainWinYChanged: win.y = settingPage.mainWinY
 
-        onPosChanged: {
-            win.x = settingPage.mainWinX
-            win.y = settingPage.mainWinY
-        }
+        onMainWinOpacityChanged: rec.opacity = mainWinOpacity
+        onInputOpacityChanged: inputRec.opacity = inputOpacity
 
-        onOpacityChanged: {
-            rec.opacity = mainWinOpacity
-        }
-
-        onRecInOpacityChanged: {
-            inputRec.opacity = inputOpacity
-        }
-
-        onLoadTypeChanged: {
+        onKeyPressChanged: {
             tmpText = loadText.text;
             loadText.clear();
             switch(keyPress){
@@ -125,9 +134,14 @@ Window {
             loadText.text = tmpText;
         }
 
-        onWindowColorChanged: {
-            rec.color = mainWinColor
-        }
+        onMainWinColorChanged: rec.color = mainWinColor;
+        onEditWinColorChanged: inputRec.color = editWinColor
+
+        onFontColorChanged: loadText.color = fontColor
+        onFontSizeChanged: loadText.font.pixelSize = fontSize
+        onEditFontColorChanged: textEdit.color = editFontColor
+        onEditFontSizeChanged: textEdit.font.pixelSize = editFontSize
+
     }
 
     function loadSettingPage(){
@@ -236,6 +250,7 @@ Window {
                     clip: false
                     wrapMode: TextEdit.Wrap
                     selectByMouse: true
+                    font.pixelSize: 14
 
                     /*光标跟随*/
                     onCursorRectangleChanged: editFlick.ensureVisible(cursorRectangle)
@@ -291,26 +306,21 @@ Window {
                     leftPadding: rec.radius
                     rightPadding: rec.radius
                     readOnly: true
-                    textFormat: TextEdit.MarkdownText
+                    textFormat: Text.MarkdownText
                     wrapMode: TextEdit.Wrap
                     clip: false
+                    font.pixelSize: 14
                     /*selectByMouse无法跟随flick*/
                     //selectByMouse: true
 
-                    Component.onCompleted: {
-//                        console.log("加载中...\n",win.noteText);
-                        loadText.text = fileDeal.loadFileDeal(settingPage.fileDefault);
-                    }
+                    Component.onCompleted: loadText.text = fileDeal.loadFileDeal(settingPage.fileUrl);
 
-                    onContentSizeChanged:  {
-//                        console.log(flick.contentY,contentHeight,flick.height)
-                        flick.contentY = contentHeight-flick.height
-                    }
+                    onContentSizeChanged: flick.contentY = contentHeight-flick.height
 
                     onTextChanged: {
 //                        console.log(loadText.text)
                         if(settingPage.autoSave){
-                            fileDeal.saveFileDeal(loadText.text,settingPage.fileDefault);
+                            fileDeal.saveFileDeal(loadText.text,settingPage.fileUrl);
                         }
                     }
                 }

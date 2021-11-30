@@ -6,44 +6,46 @@ import Qt.labs.platform 1.0
 
 Window {
     id:root
-    width: 300
-    height: 350
+    width: 400
+    height: 440
     visible: false
     minimumWidth: 300
     minimumHeight: 200
 
     property alias autoSave: saveOrNotBtn.isChecked
-    property real mainWinWidget;
+    property real mainWinWidth;
     property real mainWinHeight;
     property real mainWinX;
     property real mainWinY;
+
     property real mainWinOpacity;
     property real inputOpacity;
+
     property var mainWinColor;
+    property var editWinColor;
 
-    property var defaultRadius: autoSave.height * 0.5
-    property color borderColor: "#CCEEDD"
-    property var fileDefault: StandardPaths.writableLocation(StandardPaths.DocumentsLocation) + "/Note.md"
-    property alias filePathDialog: fileDialog.currentFile
+    property var fontColor;
+    property var editFontColor;
+    property var fontSize;
+    property var editFontSize;
 
+    property var fileUrl;
     property var typeList: ["Txt","MarkDown","Rich","Auto"]
     property var keyPress: typeList[1]
-
     property var posList: ["default","center","custom"]
     property var posCur: posList[0]
 
-    signal sizeChanged();
-    signal posChanged();
-    signal opacityChanged();
-    signal recInOpacityChanged();
-    signal loadTypeChanged();
-    signal filePathChanged();
-    signal windowColorChanged();
+    property var modBackgroundColor: "#3399ff"
+    property var modForegroundColor: "#ffffff"
 
+    property var defaultRadius: autoSaveRoot.height * 0.5
+    property var borderColor: "#CCEEDD"
+
+    signal fileUrlIsChanged();
 
     //自动保存
     Rectangle{
-        id: autoSave
+        id: autoSaveRoot
         anchors.top: parent.top
         anchors.topMargin: 5
         anchors.horizontalCenter: parent.horizontalCenter
@@ -67,31 +69,17 @@ Window {
             btnHight: parent.height
 //            btnWidth: 120
 
-            Component.onCompleted: {
-                if(isChecked){
-                    // TODO: setting界面加载配置文件
-                    console.log("已加载配置文件")
-                }
-            }
-
-//            onYesPress: {
-
-//            }
-
-//            onNoPress: {
-
-//            }
         }
 
     }
 
     //TODO: 文件路径配置  DONE
     Rectangle{
-        id: filePath
-        anchors.top: autoSave.bottom
+        id: filePathRoot
+        anchors.top: autoSaveRoot.bottom
         anchors.topMargin: 5
         anchors.horizontalCenter: parent.horizontalCenter
-        width: autoSave.width
+        width: autoSaveRoot.width
         height: 25
         border.color: "#CCEEDD"
         radius: defaultRadius
@@ -108,8 +96,8 @@ Window {
 
             Text{
                 anchors.verticalCenter: parent.verticalCenter
-                text: fileDefault
-                font.pixelSize: 13
+                text: fileUrl
+                font.pixelSize: 14
             }
         }
 
@@ -120,21 +108,20 @@ Window {
             anchors.right: parent.right
             anchors.top: parent.top
             radius: defaultRadius
-            color: "#3399ff"
+            color: modBackgroundColor
             Text {
                 id: pathSelectBtn
-                text: qsTr("选择文件")
-//                font.pixelSize: 13
+                text: qsTr(" 选择文件 ")
+                font.pixelSize: 14
                 anchors.centerIn: parent
-                color: "#ffffff"
+                color: modForegroundColor
             }
 
             MouseArea{
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
 
-                onPressed: {
-                    //console.log("open file dialog")
+                onClicked: {
                     fileDialog.open()
                 }
             }
@@ -145,20 +132,19 @@ Window {
         id:fileDialog
         folder: StandardPaths.writableLocation(StandardPaths.DocumentsLocation)
         onAccepted: {
-            //console.log("select",currentFile)
-            filePathChanged();
+            fileUrl = currentFile
+            fileUrlIsChanged();
         }
     }
 
-
     //TODO: 自定义主窗口大小 ****位置**** DONE
     Rectangle{
-        id:windowSize
-        width: autoSave.width
-        height: autoSave.height
+        id:windowSizeRoot
+        width: autoSaveRoot.width
+        height: autoSaveRoot.height
         anchors.horizontalCenter: parent.horizontalCenter
         border.color: borderColor
-        anchors.top: filePath.bottom
+        anchors.top: filePathRoot.bottom
         anchors.topMargin: 5
         radius: defaultRadius
 
@@ -168,7 +154,7 @@ Window {
             anchors.left: parent.left
             radius: height * 0.5
             border.color: parent.border.color
-            color: "#3399ff"
+            color: modBackgroundColor
 
             MouseArea{
                 anchors.fill: winWidth
@@ -176,12 +162,12 @@ Window {
                 onWheel: {
                     if(!wheel.modifiers){
                         if(wheel.angleDelta.y > 0){
-                            winWidth.text = Number(winWidth.text) + 10
+                            mainWinWidth = Number(mainWinWidth) + 10
                         }else{
-                            if(winWidth.text > 0){
-                                winWidth.text = Number(winWidth.text) - 10
+                            if(mainWinWidth > 0){
+                                mainWinWidth = Number(mainWinWidth) - 10
                             }else{
-                                winWidth.text = 0;
+                                mainWinWidth = 0;
                             }
 
                         }
@@ -196,7 +182,7 @@ Window {
                 anchors.leftMargin: parent.radius
                 anchors.verticalCenter: parent.verticalCenter
                 width: contentWidth
-                color: "#FFFFFF"
+                color: modForegroundColor
             }
 
             TextInput{
@@ -206,14 +192,8 @@ Window {
                 width: parent.width * 0.5
                 color: "#FF0000"
                 clip: true
-                text: mainWinWidget
+                text: mainWinWidth
                 selectByMouse: true
-
-                onTextChanged: {
-                    root.mainWinWidget = winWidth.text
-                    root.sizeChanged();
-                }
-
             }
         }
 
@@ -223,7 +203,7 @@ Window {
             anchors.right: parent.right
             radius: height * 0.5
             border.color: parent.border.color
-            color: "#3399ff"
+            color: modBackgroundColor
 
             MouseArea{
                 anchors.fill: winHeight
@@ -231,12 +211,12 @@ Window {
                 onWheel: {
                     if(!wheel.modifiers){
                         if(wheel.angleDelta.y > 0){
-                            winHeight.text = Number(winHeight.text) + 10
+                            mainWinHeight = Number(mainWinHeight) + 10
                         }else{
-                            if(winHeight.text > 0){
-                                winHeight.text = Number(winHeight.text) - 10
+                            if(mainWinHeight > 0){
+                                mainWinHeight = Number(mainWinHeight) - 10
                             }else{
-                                winHeight.text = 0;
+                                mainWinHeight = 0;
                             }
                         }
                     }
@@ -250,7 +230,7 @@ Window {
                 anchors.leftMargin: parent.radius
                 anchors.verticalCenter: parent.verticalCenter
                 width: contentWidth
-                color: "#FFFFFF"
+                color: modForegroundColor
             }
 
             TextInput{
@@ -262,12 +242,6 @@ Window {
                 clip: true
                 text: mainWinHeight
                 selectByMouse: true
-
-                onTextChanged: {
-                    root.mainWinHeight = winHeight.text
-                    root.sizeChanged();
-                }
-
             }
 
         }
@@ -275,12 +249,12 @@ Window {
     }
 
     Rectangle{
-        id: posSet
-        anchors.top: windowSize.bottom
+        id: windowPosRoot
+        anchors.top: windowSizeRoot.bottom
         anchors.topMargin: 5
         anchors.horizontalCenter: parent.horizontalCenter
-        width: autoSave.width
-        height: autoSave.height
+        width: autoSaveRoot.width
+        height: autoSaveRoot.height
         border.color: "#CCEEDD"
         radius: height * 0.5
 
@@ -292,7 +266,7 @@ Window {
             height: parent.height
             radius: parent.radius
             border.color: parent.border.color
-            color: defaultPosText.text === posCur ? "#3399ff" : "#ffffff"
+            color: defaultPosText.text === posCur ? modBackgroundColor : modForegroundColor
 
             Rectangle{
                 anchors.right: parent.right
@@ -307,7 +281,7 @@ Window {
                 id: defaultPosText
                 text: qsTr("default")
                 anchors.centerIn: parent
-                color: defaultPosText.text === posCur ? "#ffffff" : "#000000"
+                color: defaultPosText.text === posCur ? modForegroundColor : "#000000"
             }
 
             MouseArea{
@@ -315,9 +289,8 @@ Window {
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {
                     posCur = posList[0]
-                    mainWinX = (Screen.width-mainWinWidget)*0.5
+                    mainWinX = (Screen.width-mainWinWidth)*0.5
                     mainWinY = (Screen.desktopAvailableHeight)-mainWinHeight-10
-                    posChanged();
                 }
             }
         }
@@ -329,13 +302,13 @@ Window {
             width: defaultPos.width
             height: parent.height
             border.color: parent.border.color
-            color: centerPosText.text === posCur ? "#3399ff" : "#ffffff"
+            color: centerPosText.text === posCur ? modBackgroundColor : modForegroundColor
 
             Text{
                 id: centerPosText
                 text: "center"
                 anchors.centerIn: parent
-                color: centerPosText.text === posCur ? "#ffffff" : "#000000"
+                color: centerPosText.text === posCur ? modForegroundColor : "#000000"
             }
 
             MouseArea{
@@ -343,9 +316,8 @@ Window {
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {
                     posCur = posList[1]
-                    mainWinX = (Screen.width-mainWinWidget)*0.5
+                    mainWinX = (Screen.width-mainWinWidth)*0.5
                     mainWinY = (Screen.height-mainWinHeight)*0.5
-                    posChanged();
                 }
             }
         }
@@ -357,13 +329,13 @@ Window {
             border.color: parent.border.color
             width: defaultPos.width
             height: parent.height
-            color: customPosText.text === posCur ? "#3399ff" : "#ffffff"
+            color: customPosText.text === posCur ? modBackgroundColor : modForegroundColor
 
             Text{
                 id: customPosText
                 text: "custom"
                 anchors.centerIn: parent
-                color: customPosText.text === posCur ? "#ffffff" : "#000000"
+                color: customPosText.text === posCur ? modForegroundColor : "#000000"
             }
 
             MouseArea{
@@ -383,7 +355,7 @@ Window {
             width: (parent.width - defaultPos.width - centerPos.width - customPos.width)*0.5+1
             height: parent.height
             clip: true
-            color: "#3399ff"
+            color: modBackgroundColor
 
             MouseArea{
                 anchors.fill: parent
@@ -391,12 +363,12 @@ Window {
                 onWheel: {
                     if(!wheel.modifiers){
                         if(wheel.angleDelta.y > 0){
-                            xDisInput.text = Number(xDisInput.text) + 10
+                            mainWinX = Number(mainWinX) + 10
                         }else{
-                            if(xDisInput.text > 0){
-                                xDisInput.text = Number(xDisInput.text) - 10
+                            if(mainWinX > 0){
+                                mainWinX = Number(mainWinX) - 10
                             }else{
-                                xDisInput.text = 0;
+                                mainWinX = 0;
                             }
 
                         }
@@ -410,11 +382,6 @@ Window {
                 text: mainWinX
                 readOnly: customPosText.text !== posCur
                 color: "#ff0000"
-
-                onTextChanged: {
-                    mainWinX = Number(xDisInput.text)
-                    posChanged();
-                }
             }
 
         }
@@ -428,7 +395,7 @@ Window {
             height: parent.height
             clip: true
             radius: parent.radius
-            color: "#3399ff"
+            color: modBackgroundColor
 
             MouseArea{
                 anchors.fill: parent
@@ -436,12 +403,12 @@ Window {
                 onWheel: {
                     if(!wheel.modifiers){
                         if(wheel.angleDelta.y > 0){
-                            yDisInput.text = Number(yDisInput.text) + 10
+                            mainWinY = Number(mainWinY) + 10
                         }else{
-                            if(yDisInput.text > 0){
-                                yDisInput.text = Number(yDisInput.text) - 10
+                            if(mainWinY > 0){
+                                mainWinY = Number(mainWinY) - 10
                             }else{
-                                yDisInput.text = 0;
+                                mainWinY = 0;
                             }
 
                         }
@@ -465,21 +432,16 @@ Window {
                 text: mainWinY
                 readOnly: customPosText.text !== posCur
                 color: "#ff0000"
-
-                onTextChanged: {
-                    mainWinY = yDisInput.text
-                    posChanged();
-                }
             }
         }
     }
 
     //TODO: 设置透明度   DONE
     Rectangle{
-        id: opacitySet
-        height: autoSave.height
-        width: autoSave.width
-        anchors.top: posSet.bottom
+        id: winOpacityRoot
+        height: autoSaveRoot.height
+        width: autoSaveRoot.width
+        anchors.top: windowPosRoot.bottom
         anchors.topMargin: 5
         anchors.horizontalCenter: parent.horizontalCenter
         border.color: borderColor
@@ -490,9 +452,9 @@ Window {
             onWheel: {
                 if(!wheel.modifiers){
                     if(wheel.angleDelta.y > 0){
-                        progressBar.value += 0.1
+                        mainWinOpacity += 0.1
                     }else{
-                        progressBar.value -= 0.1
+                        mainWinOpacity -= 0.1
                     }
                 }
             }
@@ -517,20 +479,14 @@ Window {
             to: 1
             value: mainWinOpacity
             stepSize: 0.1
-
-            onValueChanged: {
-                mainWinOpacity = value
-                root.opacityChanged();
-            }
-
         }
     }
 
     Rectangle{
-        id: inputOpacitySet
-        height: autoSave.height
-        width: autoSave.width
-        anchors.top: opacitySet.bottom
+        id: editOpacityRoot
+        height: autoSaveRoot.height
+        width: autoSaveRoot.width
+        anchors.top: winOpacityRoot.bottom
         anchors.topMargin: 5
         anchors.horizontalCenter: parent.horizontalCenter
         border.color: borderColor
@@ -541,9 +497,9 @@ Window {
             onWheel: {
                 if(!wheel.modifiers){
                     if(wheel.angleDelta.y > 0){
-                        inputProgressBar.value += 0.1
+                        inputOpacity += 0.1
                     }else{
-                        inputProgressBar.value -= 0.1
+                        inputOpacity -= 0.1
                     }
                 }
             }
@@ -568,23 +524,17 @@ Window {
             to: 1
             value: inputOpacity
             stepSize: 0.1
-
-            onValueChanged: {
-                inputOpacity = value
-                root.recInOpacityChanged();
-            }
-
         }
     }
 
     //TODO: 显示文本类型  DONE
     Rectangle{
-        id: viewType
-        width: autoSave.width
-        height: autoSave.height
+        id: docTypeRoot
+        width: autoSaveRoot.width
+        height: autoSaveRoot.height
         anchors.horizontalCenter: parent.horizontalCenter
         border.color: borderColor
-        anchors.top: inputOpacitySet.bottom
+        anchors.top: editOpacityRoot.bottom
         anchors.topMargin: 5
         radius: defaultRadius
 
@@ -595,7 +545,7 @@ Window {
             anchors.left: parent.left
             radius: parent.radius
             border.color: borderColor
-            color: (keyPress === typeTxtText.text) ? "#3399ff" : "#ffffff"
+            color: (keyPress === typeTxtText.text) ? modBackgroundColor : modForegroundColor
 
             Rectangle{
                 width: parent.width * 0.5
@@ -610,16 +560,13 @@ Window {
                 id: typeTxtText
                 anchors.centerIn: parent
                 text: typeList[0]
-                color: (keyPress === typeTxtText.text) ? "#ffffff" : "#000000"
+                color: (keyPress === typeTxtText.text) ? modForegroundColor : "#000000"
             }
 
             MouseArea{
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
-                onClicked: {
-                    keyPress = typeList[0]
-                    loadTypeChanged();
-                }
+                onClicked: keyPress = typeList[0]
             }
         }
 
@@ -629,23 +576,21 @@ Window {
             width: parent.width * 0.25
             anchors.left: typeTxt.right
             border.color: borderColor
-            color: (keyPress === typeMdText.text) ? "#3399ff" : "#ffffff"
+            color: (keyPress === typeMdText.text) ? modBackgroundColor : modForegroundColor
 
             Text {
                 id: typeMdText
                 anchors.centerIn: parent
                 text: typeList[1]
-                color: (keyPress === typeMdText.text) ? "#ffffff" : "#000000"
+                color: (keyPress === typeMdText.text) ? modForegroundColor : "#000000"
             }
 
             MouseArea{
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
-                onClicked: {
-                    keyPress = typeList[1]
-                    loadTypeChanged();
-                }
+                onClicked: keyPress = typeList[1]
             }
+
         }
 
         Rectangle{
@@ -654,22 +599,19 @@ Window {
             width: parent.width * 0.25
             anchors.left: typeMd.right
             border.color: borderColor
-            color: (keyPress === typeRichText.text) ? "#3399ff" : "#ffffff"
+            color: (keyPress === typeRichText.text) ? modBackgroundColor : modForegroundColor
 
             Text {
                 id: typeRichText
                 anchors.centerIn: parent
                 text: typeList[2]
-                color: (keyPress === typeRichText.text) ? "#ffffff" : "#000000"
+                color: (keyPress === typeRichText.text) ? modForegroundColor : "#000000"
             }
 
             MouseArea{
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
-                onClicked: {
-                    keyPress = typeList[2]
-                    loadTypeChanged();
-                }
+                onClicked: keyPress = typeList[2]
             }
         }
 
@@ -680,7 +622,7 @@ Window {
             anchors.right: parent.right
             radius: parent.radius
             border.color: borderColor
-            color: (keyPress === plainText.text) ? "#3399ff" : "#ffffff"
+            color: (keyPress === plainText.text) ? modBackgroundColor : modForegroundColor
 
             Rectangle{
                 width: parent.width * 0.5
@@ -696,28 +638,25 @@ Window {
                 id: plainText
                 anchors.centerIn: parent
                 text: typeList[3]
-                color: (keyPress === plainText.text) ? "#ffffff" : "#000000"
+                color: (keyPress === plainText.text) ? modForegroundColor : "#000000"
             }
 
             MouseArea{
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
-                onClicked: {
-                    keyPress = typeList[3]
-                    loadTypeChanged();
-                }
+                onClicked: keyPress = typeList[3]
             }
         }
     }
 
     //TODO: COLOR设置 字体 输入框 输入框字体
     Rectangle{
-        id: colorSet
-        width: autoSave.width
-        height: autoSave.height
+        id: winColorRoot
+        width: autoSaveRoot.width
+        height: autoSaveRoot.height
         anchors.horizontalCenter: parent.horizontalCenter
         border.color: borderColor
-        anchors.top: viewType.bottom
+        anchors.top: docTypeRoot.bottom
         anchors.topMargin: 5
         radius: defaultRadius
 
@@ -757,21 +696,281 @@ Window {
             height: parent.height
             radius: defaultRadius
             border.color: parent.border.color
-            color: "#3399ff"
+            color: modBackgroundColor
 
             Text {
                 id: colorSelectText
                 text: "选择颜色"
-                color: "#ffffff"
+                color: modForegroundColor
                 anchors.centerIn: parent
             }
 
             MouseArea{
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
+                onClicked: colorDialog.open();
+            }
+        }
 
-                onClicked: {
-                    colorDialog.open();
+    }
+
+    Rectangle{
+        id: editColorRoot
+        width: autoSaveRoot.width
+        height: autoSaveRoot.height
+        anchors.horizontalCenter: parent.horizontalCenter
+        border.color: borderColor
+        anchors.top: winColorRoot.bottom
+        anchors.topMargin: 5
+        radius: defaultRadius
+
+        Rectangle{
+            id: editTextRec
+            anchors.left: parent.left
+            anchors.leftMargin: parent.radius
+            anchors.top: parent.top
+            anchors.topMargin: 1
+            width: editColorBg.contentWidth
+            height: parent.height - 2
+
+            Text {
+                id: editColorBg
+                text: qsTr("编辑区背景色: ")
+                anchors.centerIn: parent
+            }
+
+        }
+
+        Rectangle{
+            id: editColorRec
+            anchors.left: editTextRec.right
+            anchors.top: parent.top
+            color: editWinColor
+            radius: defaultRadius
+            width: parent.width - editColorBtn.width - editTextRec.width - radius
+            height: parent.height
+
+        }
+
+        Rectangle{
+            id: editColorBtn
+            anchors.right: parent.right
+            anchors.top: parent.top
+            width: colorSelectText.contentWidth + radius * 2
+            height: parent.height
+            radius: defaultRadius
+            border.color: parent.border.color
+            color: modBackgroundColor
+
+            Text {
+                id: editColorSelectText
+                text: "选择颜色"
+                color: modForegroundColor
+                anchors.centerIn: parent
+            }
+
+            MouseArea{
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                onClicked: editerColorDialog.open();
+            }
+        }
+
+    }
+//字体属性
+    Rectangle{
+        id: textAttrRoot
+        anchors.top: editColorRoot.bottom
+        width: autoSaveRoot.width
+        height: autoSaveRoot.height
+        anchors.horizontalCenter: parent.horizontalCenter
+        border.color: borderColor
+        anchors.topMargin: 5
+        radius: defaultRadius
+
+        Rectangle{
+            id: textColorRec
+            anchors.left: parent.left
+            anchors.top: parent.top
+            width: parent.width*0.25
+            height: parent.height
+            radius: parent.radius
+            border.color: borderColor
+            color: modBackgroundColor
+
+            Text {
+                text: qsTr("字体颜色")
+                anchors.centerIn: parent
+                color: modForegroundColor
+            }
+        }
+
+        Rectangle{
+            id: textColorSet
+            anchors.left: textColorRec.right
+            anchors.top: parent.top
+            width: textColorRec.width
+            height: parent.height
+            border.color: borderColor
+            radius: parent.radius
+            color: fontColor
+
+            MouseArea{
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                onClicked: fontColorDialog.open()
+            }
+        }
+
+        Rectangle{
+            id:textSizeRec
+            anchors.left: textColorSet.right
+            anchors.top: parent.top
+            width: textColorRec.width
+            height: parent.height
+            border.color: borderColor
+            radius: parent.radius
+            color: modBackgroundColor
+
+            Text {
+                text: qsTr("字体大小")
+                anchors.centerIn: parent
+                color: modForegroundColor
+            }
+        }
+
+        Rectangle{
+            anchors.right: parent.right
+            anchors.top: parent.top
+            width: textColorRec.width
+            height: parent.height
+            border.color: borderColor
+            radius: defaultRadius
+
+            Text {
+                id: fontSizeSet
+                text: fontSize
+                anchors.centerIn: parent
+                color: "#ff0000"
+            }
+
+            MouseArea{
+                anchors.fill: parent
+                cursorShape: Qt.IBeamCursor
+
+                onWheel: {
+                    if(!wheel.modifiers){
+                        if(wheel.angleDelta.y > 0){
+                            fontSize = Number(fontSize) + 1
+                        }else{
+                            if(fontSize > 0){
+                                fontSize= Number(fontSize) - 1
+                            }else{
+                                fontSize = 0;
+                            }
+
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+
+
+    Rectangle{
+        id: editTextAttrRoot
+        anchors.top: textAttrRoot.bottom
+        width: autoSaveRoot.width
+        height: autoSaveRoot.height
+        anchors.horizontalCenter: parent.horizontalCenter
+        border.color: borderColor
+        anchors.topMargin: 5
+        radius: defaultRadius
+
+        Rectangle{
+            id: editTextColorRec
+            anchors.left: parent.left
+            anchors.top: parent.top
+            width: parent.width*0.25
+            height: parent.height
+            radius: parent.radius
+            border.color: borderColor
+            color: modBackgroundColor
+
+            Text {
+                text: qsTr("编辑框字体颜色")
+                anchors.centerIn: parent
+                color: modForegroundColor
+            }
+        }
+
+        Rectangle{
+            id: editTextColorSet
+            anchors.left: editTextColorRec.right
+            anchors.top: parent.top
+            width: editTextColorRec.width
+            height: parent.height
+            border.color: borderColor
+            radius: parent.radius
+            color: editFontColor
+
+            MouseArea{
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                onClicked: editFontColorDialog.open()
+            }
+        }
+
+        Rectangle{
+            id:editTextSizeRec
+            anchors.left: editTextColorSet.right
+            anchors.top: parent.top
+            width: editTextColorRec.width
+            height: parent.height
+            border.color: borderColor
+            radius: parent.radius
+            color: modBackgroundColor
+
+            Text {
+                text: qsTr("字体大小")
+                anchors.centerIn: parent
+                color: modForegroundColor
+            }
+        }
+
+        Rectangle{
+            anchors.right: parent.right
+            anchors.top: parent.top
+            width: editTextColorRec.width
+            height: parent.height
+            border.color: borderColor
+            radius: defaultRadius
+
+            Text {
+                id: editFontSizeSet
+                text: editFontSize
+                anchors.centerIn: parent
+                color: "#ff0000"
+            }
+
+            MouseArea{
+                anchors.fill: parent
+                cursorShape: Qt.IBeamCursor
+
+                onWheel: {
+                    if(!wheel.modifiers){
+                        if(wheel.angleDelta.y > 0){
+                            editFontSize = Number(editFontSize) + 1
+                        }else{
+                            if(editFontSize > 0){
+                                editFontSize= Number(editFontSize) - 1
+                            }else{
+                                editFontSize = 0;
+                            }
+
+                        }
+                    }
                 }
             }
         }
@@ -780,18 +979,30 @@ Window {
 
     ColorDialog{
         id: colorDialog
-        onAccepted: {
-            mainWinColor = currentColor
-            windowColorChanged();
-        }
+        onAccepted: mainWinColor = currentColor;
+    }
+
+    ColorDialog{
+        id:editerColorDialog
+        onAccepted: editWinColor = currentColor;
+    }
+
+    ColorDialog{
+        id: fontColorDialog
+        onAccepted: fontColor = currentColor
+    }
+
+    ColorDialog{
+        id: editFontColorDialog
+        onAccepted: editFontColor = currentColor
     }
 
     Image {
         id: noteEditer
         source: "qrc:/icon/textBg.png"
-        width: autoSave.width
+        width: autoSaveRoot.width
         height: 80
-        anchors.top: colorSet.bottom
+        anchors.top: editTextAttrRoot.bottom
         anchors.topMargin: 15
         anchors.horizontalCenter: parent.horizontalCenter
     }

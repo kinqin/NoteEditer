@@ -1,6 +1,7 @@
 #include "filedeal.h"
 #include <QFile>
 #include <QDebug>
+#include <QMessageBox>
 
 //#ifdef Q_OS_WIN
 //#include "winsock2.h"
@@ -14,12 +15,14 @@ FileDeal::FileDeal(QObject *parent) : QObject(parent)
 void FileDeal::saveFileDeal(QString text, QString savePath)
 {
     QFile saveFile(savePath);
-//    if(saveFile.exists()){
-//        return;
-//    }
-    saveFile.open(QIODevice::WriteOnly|QIODevice::Text);
-    saveFile.write(text.toUtf8());
-    saveFile.close();
+
+    if(saveFile.open(QIODevice::WriteOnly|QIODevice::Text)){
+        saveFile.write(text.toUtf8());
+        saveFile.close();
+    }else{
+        QMessageBox::information(NULL, "ERROR", "file invalid: "+savePath,QMessageBox::Yes);
+    }
+
 }
 
 QString FileDeal::loadFileDeal(QString filePath)
@@ -38,11 +41,9 @@ QString FileDeal::loadFileDeal(QString filePath)
 QString FileDeal::getFilePath(QString filePath)
 {
 #ifdef Q_OS_WIN
-    qDebug()<<"当前系统：windows";
     return filePath.mid(8);
 #endif
 #ifdef Q_OS_LINUX
-    qDebug()<<"当前系统：linux";
     return filePath.mid(7);
 #endif
 

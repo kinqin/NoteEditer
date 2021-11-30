@@ -4,4 +4,5 @@
         <file>SettingPage.qml</file>
         <file>StandardBtnYesNo.qml</file>
     </qresource>
+    
 </RCC>
